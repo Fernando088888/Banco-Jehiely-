@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Geniuses Of Eleectric and Solutions
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -117,7 +117,6 @@
         <form id="transactionForm">
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
-            <button type="button" onclick="realizarOperacion('Depósito')">Depositar</button>
             <button type="button" onclick="realizarOperacion('Retiro')">Retirar</button>
         </form>
 
@@ -141,6 +140,16 @@
         const passwordSection = document.getElementById('passwordSection');
         const transactionForm = document.getElementById('transactionForm');
 
+        // Obtener parámetros de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromQR = urlParams.get('fromQR');
+
+        if (fromQR === 'true') {
+            // Si la página fue abierta desde un código QR, omite la sección de contraseña y muestra el formulario de transacciones
+            passwordSection.style.display = 'none';
+            transactionForm.style.display = 'block';
+        }
+
         actualizarSaldo();
         actualizarHistorial();
 
@@ -154,7 +163,41 @@
             }
         }
 
-        // Resto del script...
+        function realizarOperacion(tipo) {
+            const montoIngresado = document.getElementById('numeroInput').value;
+
+            if (!isNaN(montoIngresado) && montoIngresado !== '') {
+                // Realizar la operación (suma o resta) al saldo guardado
+                const monto = parseInt(montoIngresado);
+                if (tipo === "Retiro" && monto > saldoActual) {
+                    alert('Saldo insuficiente para realizar el retiro');
+                    return;
+                }
+
+                saldoActual = saldoActual - monto;
+
+                // Guardar la operación en el historial
+                const operacion = {
+                    tipo: tipo,
+                    monto: monto,
+                    fecha: new Date().toLocaleString()
+                };
+                historialTransferencias.push(operacion);
+                localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
+
+                // Guardar el nuevo saldo en localStorage
+                localStorage.setItem('saldoGuardado', saldoActual);
+
+                // Limpiar el campo de entrada
+                document.getElementById('numeroInput').value = '';
+
+                // Actualizar el contenido del elemento
+                actualizarSaldo();
+                actualizarHistorial();
+            } else {
+                alert('Ingrese un monto válido');
+            }
+        }
 
         function obtenerSaldoGuardado() {
             // Obtener el saldo guardado desde localStorage
@@ -181,42 +224,6 @@
                 itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
                 listaTransferenciasElemento.appendChild(itemLista);
             });
-        }
-
-        function realizarOperacion(tipo) {
-            const montoIngresado = document.getElementById('numeroInput').value;
-
-            if (!isNaN(montoIngresado) && montoIngresado !== '') {
-                // Realizar la operación (suma o resta) al saldo guardado
-                const monto = parseInt(montoIngresado);
-                if (tipo === "Retiro" && monto > saldoActual) {
-                    alert('Saldo insuficiente para realizar el retiro');
-                    return;
-                }
-
-                saldoActual = tipo === "Depósito" ? saldoActual + monto : saldoActual - monto;
-
-                // Guardar la operación en el historial
-                const operacion = {
-                    tipo: tipo,
-                    monto: monto,
-                    fecha: new Date().toLocaleString()
-                };
-                historialTransferencias.push(operacion);
-                localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-
-                // Guardar el nuevo saldo en localStorage
-                localStorage.setItem('saldoGuardado', saldoActual);
-
-                // Limpiar el campo de entrada
-                document.getElementById('numeroInput').value = '';
-
-                // Actualizar el contenido del elemento
-                actualizarSaldo();
-                actualizarHistorial();
-            } else {
-                alert('Ingrese un monto válido');
-            }
         }
 
         function borrarHistorial() {
