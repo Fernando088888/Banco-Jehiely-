@@ -192,7 +192,7 @@
             // Construir y mostrar la lista de transferencias
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
-                itemLista.textContent = ${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha};
+                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
                 listaTransferenciasElemento.appendChild(itemLista);
             });
         }
@@ -202,12 +202,6 @@
             historialTransferencias = [];
             localStorage.removeItem('historialTransferencias');
             actualizarHistorial();
-        }
-    </script>
-</body>
-</html>
-        function borrarHistorial() {
-            socket.send(JSON.stringify({ type: 'clearHistory' }));
         }
     </script>
 </body>
