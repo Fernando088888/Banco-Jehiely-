@@ -96,7 +96,7 @@
         }
 
         #passwordSection {
-            display: block; /* Cambiado a 'block' para que sea visible inicialmente */
+            display: block;
         }
 
         #transactionForm {
@@ -146,7 +146,7 @@
 
         function login() {
             const passwordInput = document.getElementById('passwordInput').value;
-            if (passwordInput === 6996) {
+            if (passwordInput === '6996') {
                 passwordSection.style.display = 'none';
                 transactionForm.style.display = 'block';
             } else {
@@ -158,3 +158,4 @@
     </script>
 </body>
 </html>
+
