@@ -221,7 +221,7 @@ Geniuses Of Eleectric and Solutions
             // Construir y mostrar la lista de transferencias
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
-                itemLista.textContent = ${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha};
+                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
                 listaTransferenciasElemento.appendChild(itemLista);
             });
         }
