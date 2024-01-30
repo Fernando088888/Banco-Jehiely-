@@ -147,6 +147,8 @@
         if (fromQR === 'true') {
             passwordSection.style.display = 'none';
             transactionForm.style.display = 'block';
+            // Ocultar el botón de depósito al abrir desde un código QR
+            document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'none';
         }
 
         actualizarSaldo();
