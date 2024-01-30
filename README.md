@@ -96,6 +96,10 @@
         }
 
         #passwordSection {
+            display: block; /* Cambiado a 'block' para que sea visible inicialmente */
+        }
+
+        #transactionForm {
             display: none;
         }
     </style>
@@ -110,7 +114,7 @@
             <button id="loginBtn" onclick="login()">Ingresar</button>
         </div>
 
-        <form id="transactionForm" style="display: none;">
+        <form id="transactionForm">
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
             <button type="button" onclick="realizarOperacion('Depósito')">Depositar</button>
@@ -128,21 +132,29 @@
     </div>
 
     <script>
-        // ... (Resto del script)
+        let saldoActual = obtenerSaldoGuardado(); // Obtener el saldo guardado al cargar la página
+        let historialTransferencias = obtenerHistorialTransferencias(); // Obtener el historial de transferencias
+
+        const saldoElemento = document.getElementById('numeroActual');
+        const listaTransferenciasElemento = document.getElementById('listaTransferencias');
+        const nuevoMesBtn = document.getElementById('nuevoMesBtn');
+        const passwordSection = document.getElementById('passwordSection');
+        const transactionForm = document.getElementById('transactionForm');
+
+        actualizarSaldo();
+        actualizarHistorial();
 
         function login() {
             const passwordInput = document.getElementById('passwordInput').value;
-            if (passwordInput === 369) {
-                passwordCorrecta = true;
+            if (passwordInput === 6996) {
                 passwordSection.style.display = 'none';
-                transactionForm.style.display = 'flex';
+                transactionForm.style.display = 'block';
             } else {
                 alert('Contraseña incorrecta');
             }
         }
 
-        // ... (Resto del script)
+        // Resto del script...
     </script>
 </body>
 </html>
-
