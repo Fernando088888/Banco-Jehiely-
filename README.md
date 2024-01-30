@@ -1,5 +1,4 @@
-# Banco-Jehiely-
-# Stalin Díaz
+# Banco-Jehiely y Stalin
 <html lang="es">
 <head>
     <meta charset="UTF-8">
