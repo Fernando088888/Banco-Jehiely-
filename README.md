@@ -1,4 +1,4 @@
-Geniuses Of Eleectric and Solutions
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -118,6 +118,7 @@ Geniuses Of Eleectric and Solutions
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
             <button type="button" onclick="realizarOperacion('Retiro')">Retirar</button>
+            <button type="button" onclick="realizarOperacion('Deposito')">Depositar</button>
         </form>
 
         <p>Saldo actual: <span id="numeroActual">0</span> USD</p>
@@ -131,8 +132,8 @@ Geniuses Of Eleectric and Solutions
     </div>
 
     <script>
-        let saldoActual = obtenerSaldoGuardado(); // Obtener el saldo guardado al cargar la página
-        let historialTransferencias = obtenerHistorialTransferencias(); // Obtener el historial de transferencias
+        let saldoActual = obtenerSaldoGuardado();
+        let historialTransferencias = obtenerHistorialTransferencias();
 
         const saldoElemento = document.getElementById('numeroActual');
         const listaTransferenciasElemento = document.getElementById('listaTransferencias');
@@ -140,12 +141,10 @@ Geniuses Of Eleectric and Solutions
         const passwordSection = document.getElementById('passwordSection');
         const transactionForm = document.getElementById('transactionForm');
 
-        // Obtener parámetros de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const fromQR = urlParams.get('fromQR');
 
         if (fromQR === 'true') {
-            // Si la página fue abierta desde un código QR, omite la sección de contraseña y muestra el formulario de transacciones
             passwordSection.style.display = 'none';
             transactionForm.style.display = 'block';
         }
@@ -167,16 +166,17 @@ Geniuses Of Eleectric and Solutions
             const montoIngresado = document.getElementById('numeroInput').value;
 
             if (!isNaN(montoIngresado) && montoIngresado !== '') {
-                // Realizar la operación (suma o resta) al saldo guardado
                 const monto = parseInt(montoIngresado);
-                if (tipo === "Retiro" && monto > saldoActual) {
+
+                if (tipo === 'Deposito') {
+                    saldoActual = saldoActual + monto;
+                } else if (tipo === 'Retiro' && monto > saldoActual) {
                     alert('Saldo insuficiente para realizar el retiro');
                     return;
+                } else if (tipo === 'Retiro') {
+                    saldoActual = saldoActual - monto;
                 }
 
-                saldoActual = saldoActual - monto;
-
-                // Guardar la operación en el historial
                 const operacion = {
                     tipo: tipo,
                     monto: monto,
@@ -184,14 +184,10 @@ Geniuses Of Eleectric and Solutions
                 };
                 historialTransferencias.push(operacion);
                 localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-
-                // Guardar el nuevo saldo en localStorage
                 localStorage.setItem('saldoGuardado', saldoActual);
 
-                // Limpiar el campo de entrada
                 document.getElementById('numeroInput').value = '';
 
-                // Actualizar el contenido del elemento
                 actualizarSaldo();
                 actualizarHistorial();
             } else {
@@ -200,25 +196,19 @@ Geniuses Of Eleectric and Solutions
         }
 
         function obtenerSaldoGuardado() {
-            // Obtener el saldo guardado desde localStorage
             return parseInt(localStorage.getItem('saldoGuardado')) || 0;
         }
 
         function obtenerHistorialTransferencias() {
-            // Obtener el historial de transferencias desde localStorage
             return JSON.parse(localStorage.getItem('historialTransferencias')) || [];
         }
 
         function actualizarSaldo() {
-            // Actualizar el contenido del elemento con el saldo actual
             saldoElemento.textContent = saldoActual;
         }
 
         function actualizarHistorial() {
-            // Limpiar la lista de transferencias antes de actualizarla
             listaTransferenciasElemento.innerHTML = '';
-
-            // Construir y mostrar la lista de transferencias
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
                 itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
@@ -227,7 +217,6 @@ Geniuses Of Eleectric and Solutions
         }
 
         function borrarHistorial() {
-            // Borrar el historial y actualizar la vista
             historialTransferencias = [];
             localStorage.removeItem('historialTransferencias');
             actualizarHistorial();
