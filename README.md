@@ -155,7 +155,76 @@
         }
 
         // Resto del script...
+
+        function obtenerSaldoGuardado() {
+            // Obtener el saldo guardado desde localStorage
+            return parseInt(localStorage.getItem('saldoGuardado')) || 0;
+        }
+
+        function obtenerHistorialTransferencias() {
+            // Obtener el historial de transferencias desde localStorage
+            return JSON.parse(localStorage.getItem('historialTransferencias')) || [];
+        }
+
+        function actualizarSaldo() {
+            // Actualizar el contenido del elemento con el saldo actual
+            saldoElemento.textContent = saldoActual;
+        }
+
+        function actualizarHistorial() {
+            // Limpiar la lista de transferencias antes de actualizarla
+            listaTransferenciasElemento.innerHTML = '';
+
+            // Construir y mostrar la lista de transferencias
+            historialTransferencias.forEach(operacion => {
+                const itemLista = document.createElement('li');
+                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
+                listaTransferenciasElemento.appendChild(itemLista);
+            });
+        }
+
+        function realizarOperacion(tipo) {
+            const montoIngresado = document.getElementById('numeroInput').value;
+
+            if (!isNaN(montoIngresado) && montoIngresado !== '') {
+                // Realizar la operación (suma o resta) al saldo guardado
+                const monto = parseInt(montoIngresado);
+                if (tipo === "Retiro" && monto > saldoActual) {
+                    alert('Saldo insuficiente para realizar el retiro');
+                    return;
+                }
+
+                saldoActual = tipo === "Depósito" ? saldoActual + monto : saldoActual - monto;
+
+                // Guardar la operación en el historial
+                const operacion = {
+                    tipo: tipo,
+                    monto: monto,
+                    fecha: new Date().toLocaleString()
+                };
+                historialTransferencias.push(operacion);
+                localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
+
+                // Guardar el nuevo saldo en localStorage
+                localStorage.setItem('saldoGuardado', saldoActual);
+
+                // Limpiar el campo de entrada
+                document.getElementById('numeroInput').value = '';
+
+                // Actualizar el contenido del elemento
+                actualizarSaldo();
+                actualizarHistorial();
+            } else {
+                alert('Ingrese un monto válido');
+            }
+        }
+
+        function borrarHistorial() {
+            // Borrar el historial y actualizar la vista
+            historialTransferencias = [];
+            localStorage.removeItem('historialTransferencias');
+            actualizarHistorial();
+        }
     </script>
 </body>
 </html>
-
