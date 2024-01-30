@@ -5,94 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banco Jehiely Bermeo</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #e3f2fd;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            text-align: center;
-            background-color: #00417d;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            color: #fff;
-            margin: 20px;
-        }
-
-        h1 {
-            color: #f8f8f8;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #f8f8f8;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: #4c84b3;
-            color: #fff;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        button:hover {
-            background-color: #3a5a7f;
-        }
-
-        #numeroActual {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4c84b3;
-            margin-bottom: 10px;
-        }
-
-        #historial {
-            text-align: left;
-            margin-top: 20px;
-        }
-
-        #nuevoMesBtn {
-            background-color: #f44336;
-            color: #fff;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #nuevoMesBtn:hover {
-            background-color: #d32f2f;
-        }
+        /* Estilos CSS existentes... */
     </style>
 </head>
 <body>
@@ -117,12 +30,26 @@
     </div>
 
     <script>
-        let saldoActual = obtenerSaldoGuardado();
-        let historialTransferencias = obtenerHistorialTransferencias();
+        let saldoActual = 0;
+        let historialTransferencias = [];
 
         const saldoElemento = document.getElementById('numeroActual');
         const listaTransferenciasElemento = document.getElementById('listaTransferencias');
-        const nuevoMesBtn = document.getElementById('nuevoMesBtn');
+
+        const socket = new WebSocket('ws://tu-servidor-websocket'); // Reemplaza 'tu-servidor-websocket' con la URL de tu servidor WebSocket
+
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.type === 'update') {
+                // Actualiza los datos recibidos del servidor
+                saldoActual = data.saldo;
+                historialTransferencias = data.historial;
+
+                // Actualiza la visualización
+                actualizarSaldo();
+                actualizarHistorial();
+            }
+        };
 
         function sumarNumero() {
             realizarOperacion("Depósito");
@@ -137,38 +64,18 @@
 
             if (!isNaN(montoIngresado) && montoIngresado !== '') {
                 const monto = parseInt(montoIngresado);
-                if (tipo === "Retiro" && monto > saldoActual) {
-                    alert('Saldo insuficiente para realizar el retiro');
-                    return;
-                }
 
-                saldoActual = tipo === "Depósito" ? saldoActual + monto : saldoActual - monto;
-
-                const operacion = {
-                    tipo: tipo,
-                    monto: monto,
-                    fecha: new Date().toLocaleString()
-                };
-                historialTransferencias.push(operacion);
-                localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-
-                localStorage.setItem('saldoGuardado', saldoActual);
-
-                document.getElementById('numeroInput').value = '';
-
-                actualizarSaldo();
-                actualizarHistorial();
+                socket.send(JSON.stringify({
+                    type: 'operation',
+                    operation: {
+                        tipo: tipo,
+                        monto: monto,
+                        fecha: new Date().toLocaleString()
+                    }
+                }));
             } else {
                 alert('Ingrese un monto válido');
             }
-        }
-
-        function obtenerSaldoGuardado() {
-            return parseInt(localStorage.getItem('saldoGuardado')) || 0;
-        }
-
-        function obtenerHistorialTransferencias() {
-            return JSON.parse(localStorage.getItem('historialTransferencias')) || [];
         }
 
         function actualizarSaldo() {
@@ -186,19 +93,8 @@
         }
 
         function borrarHistorial() {
-            historialTransferencias = [];
-            localStorage.removeItem('historialTransferencias');
-            actualizarHistorial();
+            socket.send(JSON.stringify({ type: 'clearHistory' }));
         }
-
-        function actualizarPagina() {
-            saldoActual = obtenerSaldoGuardado();
-            historialTransferencias = obtenerHistorialTransferencias();
-            actualizarSaldo();
-            actualizarHistorial();
-        }
-
-        setInterval(actualizarPagina, 5000);
     </script>
 </body>
 </html>
