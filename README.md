@@ -1,50 +1,13 @@
-# Geniuses Of Electric and Solutions
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banco Jehiely Bermeo</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #e3f2fd;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
+        /* ... (Estilos anteriores) ... */
 
-        .container {
-            text-align: center;
-            background-color: #00417d;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            color: #fff;
-            margin: 20px;
-        }
-
-        h1 {
-            color: #f8f8f8;
-            margin-bottom: 20px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #f8f8f8;
-        }
-
-        input {
+        #passwordInput {
             width: 100%;
             padding: 10px;
             margin-bottom: 15px;
@@ -53,8 +16,8 @@
             box-sizing: border-box;
         }
 
-        button {
-            background-color: #4c84b3;
+        #loginBtn {
+            background-color: #4caf50;
             color: #fff;
             padding: 10px 20px;
             font-size: 16px;
@@ -64,46 +27,30 @@
             margin-bottom: 10px;
         }
 
-        button:hover {
-            background-color: #3a5a7f;
+        #loginBtn:hover {
+            background-color: #45a049;
         }
 
-        #numeroActual {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4c84b3;
-            margin-bottom: 10px;
-        }
-
-        #historial {
-            text-align: left;
-            margin-top: 20px;
-        }
-
-        #nuevoMesBtn {
-            background-color: #f44336;
-            color: #fff;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #nuevoMesBtn:hover {
-            background-color: #d32f2f;
+        #passwordSection {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Banco Jehiely Bermeo</h1>
-        
-        <form>
+
+        <div id="passwordSection">
+            <label for="passwordInput">Ingrese la contraseña:</label>
+            <input type="password" id="passwordInput" placeholder="Ingrese la contraseña" required>
+            <button id="loginBtn" onclick="login()">Ingresar</button>
+        </div>
+
+        <form id="transactionForm" style="display: none;">
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
-            <button type="button" onclick="sumarNumero()">Depositar</button>
-            <button type="button" onclick="restarNumero()">Retirar</button>
+            <button type="button" onclick="realizarOperacion('Depósito')">Depositar</button>
+            <button type="button" onclick="realizarOperacion('Retiro')">Retirar</button>
         </form>
 
         <p>Saldo actual: <span id="numeroActual">0</span> USD</p>
@@ -117,28 +64,49 @@
     </div>
 
     <script>
-        let saldoActual = obtenerSaldoGuardado(); // Obtener el saldo guardado al cargar la página
-        let historialTransferencias = obtenerHistorialTransferencias(); // Obtener el historial de transferencias
+        let saldoActual = obtenerSaldoGuardado();
+        let historialTransferencias = obtenerHistorialTransferencias();
+        let passwordCorrecta = false;
 
         const saldoElemento = document.getElementById('numeroActual');
         const listaTransferenciasElemento = document.getElementById('listaTransferencias');
-        const nuevoMesBtn = document.getElementById('nuevoMesBtn');
-        actualizarSaldo();
-        actualizarHistorial();
+        const passwordSection = document.getElementById('passwordSection');
+        const transactionForm = document.getElementById('transactionForm');
+
+        // Puedes establecer tu contraseña aquí
+        const contraseñaCorrecta = '6996';
+
+        function login() {
+            const passwordInput = document.getElementById('passwordInput').value;
+            if (passwordInput === contraseñaCorrecta) {
+                passwordCorrecta = true;
+                passwordSection.style.display = 'none';
+                transactionForm.style.display = 'flex';
+            } else {
+                alert('Contraseña incorrecta');
+            }
+        }
 
         function sumarNumero() {
-            realizarOperacion("Depósito");
+            if (passwordCorrecta) {
+                realizarOperacion("Depósito");
+            } else {
+                alert('Por favor, inicie sesión primero.');
+            }
         }
 
         function restarNumero() {
-            realizarOperacion("Retiro");
+            if (passwordCorrecta) {
+                realizarOperacion("Retiro");
+            } else {
+                alert('Por favor, inicie sesión primero.');
+            }
         }
 
         function realizarOperacion(tipo) {
             const montoIngresado = document.getElementById('numeroInput').value;
 
             if (!isNaN(montoIngresado) && montoIngresado !== '') {
-                // Realizar la operación (suma o resta) al saldo guardado
                 const monto = parseInt(montoIngresado);
                 if (tipo === "Retiro" && monto > saldoActual) {
                     alert('Saldo insuficiente para realizar el retiro');
@@ -147,7 +115,6 @@
 
                 saldoActual = tipo === "Depósito" ? saldoActual + monto : saldoActual - monto;
 
-                // Guardar la operación en el historial
                 const operacion = {
                     tipo: tipo,
                     monto: monto,
@@ -155,14 +122,10 @@
                 };
                 historialTransferencias.push(operacion);
                 localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-
-                // Guardar el nuevo saldo en localStorage
                 localStorage.setItem('saldoGuardado', saldoActual);
 
-                // Limpiar el campo de entrada
                 document.getElementById('numeroInput').value = '';
 
-                // Actualizar el contenido del elemento
                 actualizarSaldo();
                 actualizarHistorial();
             } else {
@@ -171,25 +134,20 @@
         }
 
         function obtenerSaldoGuardado() {
-            // Obtener el saldo guardado desde localStorage
             return parseInt(localStorage.getItem('saldoGuardado')) || 0;
         }
 
         function obtenerHistorialTransferencias() {
-            // Obtener el historial de transferencias desde localStorage
             return JSON.parse(localStorage.getItem('historialTransferencias')) || [];
         }
 
         function actualizarSaldo() {
-            // Actualizar el contenido del elemento con el saldo actual
             saldoElemento.textContent = saldoActual;
         }
 
         function actualizarHistorial() {
-            // Limpiar la lista de transferencias antes de actualizarla
             listaTransferenciasElemento.innerHTML = '';
 
-            // Construir y mostrar la lista de transferencias
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
                 itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
@@ -198,7 +156,6 @@
         }
 
         function borrarHistorial() {
-            // Borrar el historial y actualizar la vista
             historialTransferencias = [];
             localStorage.removeItem('historialTransferencias');
             actualizarHistorial();
@@ -206,3 +163,4 @@
     </script>
 </body>
 </html>
+
