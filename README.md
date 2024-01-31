@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+GENIUSES OF ELECTRIC AND SOLUTIONS
 <html lang="es">
 <head>
     <meta charset="UTF-8">
