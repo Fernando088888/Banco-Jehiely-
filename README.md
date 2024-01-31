@@ -117,10 +117,8 @@ GENIUSES OF ELECTRIC AND SOLUTIONS
         <form id="transactionForm">
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
+            <button type="button" onclick="realizarOperacion('Retiro')">Retirar</button>
             <button type="button" onclick="realizarOperacion('Deposito')">Depositar</button>
-            <button type="button" onclick="mostrarRetiro()">Retirar</button>
-            <button type="button" onclick="realizarRetiro('Deberes')">Deberes</button>
-            <button type="button" onclick="realizarRetiro('Préstamo')">Préstamo</button>
         </form>
 
         <p>Saldo actual: <span id="numeroActual">0</span> USD</p>
@@ -149,7 +147,6 @@ GENIUSES OF ELECTRIC AND SOLUTIONS
         if (fromQR === 'true') {
             passwordSection.style.display = 'none';
             transactionForm.style.display = 'block';
-            // Ocultar el botón de depósito al abrir desde un código QR
             document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'none';
         }
 
@@ -178,84 +175,49 @@ GENIUSES OF ELECTRIC AND SOLUTIONS
                     alert('Saldo insuficiente para realizar el retiro');
                     return;
                 } else if (tipo === 'Retiro') {
-                    // Pedir el nombre al realizar un retiro
-                    const nombre = prompt('Ingrese su nombre:');
-                    if (!nombre) {
-                        alert('Nombre requerido para el retiro');
-                        return;
+                    const nombreRetiro = prompt('Ingrese el nombre de la persona que retira:');
+                    if (nombreRetiro) {
+                        const motivoRetiro = prompt('Ingrese el motivo del retiro (Deberes, Préstamo, etc.):');
+                        if (motivoRetiro) {
+                            saldoActual = saldoActual - monto;
+
+                            const operacion = {
+                                tipo: tipo,
+                                monto: monto,
+                                nombre: nombreRetiro,
+                                motivo: motivoRetiro,
+                                fecha: new Date().toLocaleString()
+                            };
+                            historialTransferencias.push(operacion);
+                            localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
+                            localStorage.setItem('saldoGuardado', saldoActual);
+
+                            document.getElementById('numeroInput').value = '';
+
+                            actualizarSaldo();
+                            actualizarHistorial();
+                        } else {
+                            alert('Ingrese un motivo válido');
+                        }
+                    } else {
+                        alert('Ingrese un nombre válido');
                     }
-
-                    // Restar el monto del saldo actual
-                    saldoActual = saldoActual - monto;
-
-                    // Guardar la operación en el historial con el nombre
-                    const motivo = prompt('Motivo del retiro (Deberes/Préstamo):');
-                    const operacion = {
-                        tipo: `${tipo} (${motivo})`,
-                        monto: monto,
-                        nombre: nombre,
-                        fecha: new Date().toLocaleString()
-                    };
-                    historialTransferencias.push(operacion);
-                    localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-                    actualizarHistorial();
-                }
-
-                localStorage.setItem('saldoGuardado', saldoActual);
-                document.getElementById('numeroInput').value = '';
-                actualizarSaldo();
-            } else {
-                alert('Ingrese un monto válido');
-            }
-        }
-
-        function mostrarRetiro() {
-            // Mostrar los botones de retiro solo cuando se selecciona la opción de retiro
-            document.querySelector('button[type="button"][onclick="realizarRetiro(\'Deberes\')"]').style.display = 'inline-block';
-            document.querySelector('button[type="button"][onclick="realizarRetiro(\'Préstamo\')"]').style.display = 'inline-block';
-            document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'none';
-        }
-
-        function realizarRetiro(motivo) {
-            const montoIngresado = document.getElementById('numeroInput').value;
-
-            if (!isNaN(montoIngresado) && montoIngresado !== '') {
-                const monto = parseInt(montoIngresado);
-
-                if (monto > saldoActual) {
-                    alert('Saldo insuficiente para realizar el retiro');
                     return;
                 }
 
-                // Pedir el nombre al realizar un retiro
-                const nombre = prompt('Ingrese su nombre:');
-                if (!nombre) {
-                    alert('Nombre requerido para el retiro');
-                    return;
-                }
-
-                // Restar el monto del saldo actual
-                saldoActual = saldoActual - monto;
-
-                // Guardar la operación en el historial con el nombre y motivo
                 const operacion = {
-                    tipo: `Retiro (${motivo})`,
+                    tipo: tipo,
                     monto: monto,
-                    nombre: nombre,
                     fecha: new Date().toLocaleString()
                 };
                 historialTransferencias.push(operacion);
                 localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
-                actualizarHistorial();
-
                 localStorage.setItem('saldoGuardado', saldoActual);
-                document.getElementById('numeroInput').value = '';
-                actualizarSaldo();
 
-                // Ocultar los botones de retiro después de realizar la operación
-                document.querySelector('button[type="button"][onclick="realizarRetiro(\'Deberes\')"]').style.display = 'none';
-                document.querySelector('button[type="button"][onclick="realizarRetiro(\'Préstamo\')"]').style.display = 'none';
-                document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'inline-block';
+                document.getElementById('numeroInput').value = '';
+
+                actualizarSaldo();
+                actualizarHistorial();
             } else {
                 alert('Ingrese un monto válido');
             }
@@ -277,7 +239,11 @@ GENIUSES OF ELECTRIC AND SOLUTIONS
             listaTransferenciasElemento.innerHTML = '';
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
-                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.nombre} - ${operacion.fecha}`;
+                if (operacion.nombre && operacion.motivo) {
+                    itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD a ${operacion.nombre} por ${operacion.motivo} - ${operacion.fecha}`;
+                } else {
+                    itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
+                }
                 listaTransferenciasElemento.appendChild(itemLista);
             });
         }
