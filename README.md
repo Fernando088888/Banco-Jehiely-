@@ -102,11 +102,6 @@
         #transactionForm {
             display: none;
         }
-
-        /* Estilo adicional para ocultar el botón de depósito */
-        #transactionForm.hide-deposit button[type="button"][data-operation="Deposito"] {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -122,8 +117,10 @@
         <form id="transactionForm">
             <label for="numeroInput">Ingrese un monto:</label>
             <input type="number" id="numeroInput" placeholder="Ingrese el monto" required>
-            <button type="button" data-operation="Retiro" onclick="realizarOperacion('Retiro')">Retirar</button>
-            <button type="button" data-operation="Deposito" onclick="realizarOperacion('Deposito')">Depositar</button>
+            <button type="button" onclick="realizarOperacion('Deposito')">Depositar</button>
+            <button type="button" onclick="mostrarRetiro()">Retirar</button>
+            <button type="button" onclick="realizarRetiro('Deberes')">Deberes</button>
+            <button type="button" onclick="realizarRetiro('Préstamo')">Préstamo</button>
         </form>
 
         <p>Saldo actual: <span id="numeroActual">0</span> USD</p>
@@ -153,7 +150,7 @@
             passwordSection.style.display = 'none';
             transactionForm.style.display = 'block';
             // Ocultar el botón de depósito al abrir desde un código QR
-            document.querySelector('button[data-operation="Deposito"]').style.display = 'none';
+            document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'none';
         }
 
         actualizarSaldo();
@@ -188,6 +185,9 @@
                         return;
                     }
 
+                    // Restar el monto del saldo actual
+                    saldoActual = saldoActual - monto;
+
                     // Guardar la operación en el historial con el nombre
                     const motivo = prompt('Motivo del retiro (Deberes/Préstamo):');
                     const operacion = {
@@ -209,6 +209,58 @@
             }
         }
 
+        function mostrarRetiro() {
+            // Mostrar los botones de retiro solo cuando se selecciona la opción de retiro
+            document.querySelector('button[type="button"][onclick="realizarRetiro(\'Deberes\')"]').style.display = 'inline-block';
+            document.querySelector('button[type="button"][onclick="realizarRetiro(\'Préstamo\')"]').style.display = 'inline-block';
+            document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'none';
+        }
+
+        function realizarRetiro(motivo) {
+            const montoIngresado = document.getElementById('numeroInput').value;
+
+            if (!isNaN(montoIngresado) && montoIngresado !== '') {
+                const monto = parseInt(montoIngresado);
+
+                if (monto > saldoActual) {
+                    alert('Saldo insuficiente para realizar el retiro');
+                    return;
+                }
+
+                // Pedir el nombre al realizar un retiro
+                const nombre = prompt('Ingrese su nombre:');
+                if (!nombre) {
+                    alert('Nombre requerido para el retiro');
+                    return;
+                }
+
+                // Restar el monto del saldo actual
+                saldoActual = saldoActual - monto;
+
+                // Guardar la operación en el historial con el nombre y motivo
+                const operacion = {
+                    tipo: `Retiro (${motivo})`,
+                    monto: monto,
+                    nombre: nombre,
+                    fecha: new Date().toLocaleString()
+                };
+                historialTransferencias.push(operacion);
+                localStorage.setItem('historialTransferencias', JSON.stringify(historialTransferencias));
+                actualizarHistorial();
+
+                localStorage.setItem('saldoGuardado', saldoActual);
+                document.getElementById('numeroInput').value = '';
+                actualizarSaldo();
+
+                // Ocultar los botones de retiro después de realizar la operación
+                document.querySelector('button[type="button"][onclick="realizarRetiro(\'Deberes\')"]').style.display = 'none';
+                document.querySelector('button[type="button"][onclick="realizarRetiro(\'Préstamo\')"]').style.display = 'none';
+                document.querySelector('button[type="button"][onclick="realizarOperacion(\'Deposito\')"]').style.display = 'inline-block';
+            } else {
+                alert('Ingrese un monto válido');
+            }
+        }
+
         function obtenerSaldoGuardado() {
             return parseInt(localStorage.getItem('saldoGuardado')) || 0;
         }
@@ -225,10 +277,7 @@
             listaTransferenciasElemento.innerHTML = '';
             historialTransferencias.forEach(operacion => {
                 const itemLista = document.createElement('li');
-                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.fecha}`;
-                if (operacion.nombre) {
-                    itemLista.textContent += ` - Realizado por: ${operacion.nombre}`;
-                }
+                itemLista.textContent = `${operacion.tipo} de ${operacion.monto} USD - ${operacion.nombre} - ${operacion.fecha}`;
                 listaTransferenciasElemento.appendChild(itemLista);
             });
         }
@@ -241,4 +290,3 @@
     </script>
 </body>
 </html>
-
